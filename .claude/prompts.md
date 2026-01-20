@@ -186,3 +186,9 @@ also what model does the anthropic api key currently use for the resume generati
 no that's fine. remove "tools" from the header" 
 ```
 
+### 23:07:11
+
+```
+remove the Get Started button too
+```
+
