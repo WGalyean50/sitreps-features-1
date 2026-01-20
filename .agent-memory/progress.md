@@ -93,10 +93,26 @@
 - Mobile responsive with grid layouts
 - **Commit:** Agent: Complete tax-calculator-ui
 
+### Session 2 - Feature 9: va-loan-calculator-backend
+- Created VA loan data file (src/data/va-loan.ts)
+  - VA funding fee rates (first-time vs subsequent, by down payment tier)
+  - Mortgage amortization calculations
+  - Homeownership cost projections (taxes, insurance, maintenance)
+  - Rent cost projections with annual increases
+  - Opportunity cost calculations for down payment investment
+  - Break-even year finder algorithm
+- Created POST /api/housing/compare API route
+  - Accepts home price, down payment, rent, loan terms
+  - Returns comparisons at 1, 3, 5, 10 year horizons
+  - Calculates net cost including equity buildup
+  - Returns break-even year when buying beats renting
+- Build passes with new API route marked as dynamic
+- **Commit:** Agent: Complete va-loan-calculator-backend
+
 ## Current State
-- Last working commit: tax-calculator-ui
-- Features completed: 8
-- Features remaining: 11 (see features.json)
+- Last working commit: va-loan-calculator-backend
+- Features completed: 9
+- Features remaining: 10 (see features.json)
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign

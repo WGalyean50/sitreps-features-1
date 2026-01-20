@@ -115,7 +115,7 @@
         "Break-even year calculated",
         "Opportunity cost of down payment included"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "va-loan-calculator-ui",
