@@ -173,7 +173,7 @@
         "Streaming response works",
         "Processing < 30 seconds"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ai-resume-ui",
@@ -188,7 +188,7 @@
         "PDF and Word download work (email required)",
         "Mobile responsive"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "translator-feature",

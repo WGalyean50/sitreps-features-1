@@ -25,7 +25,7 @@ const careerTools = [
   {
     title: "AI Resume Builder",
     description: "Transform your military experience into a civilian resume. AI-powered translation of military jargon to corporate language.",
-    href: "/tools/resume",
+    href: "/tools/resume-builder",
     iconName: "FileText",
   },
   {

@@ -46,3 +46,11 @@ Read the output file to retrieve the result: /private/tmp/claude/-Users-wilson-c
 skip resume for now, do the translator
 ```
 
+### 22:14:29
+
+```
+here's the anthropic api key for the LLM : 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
+
+so build the resume builder feature now
+```
+

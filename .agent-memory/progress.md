@@ -198,21 +198,43 @@
 - Fixed tools hub page links (roi → roi-calculator)
 - **Commit:** Agent: Complete roi-calculator-feature
 
-## Current State
-- Last working commit: roi-calculator-feature
-- Features completed: 14
-- Features remaining: 5 (see features.json)
+### Session 3 - Features 13-14: ai-resume-backend & ai-resume-ui
+- Installed @anthropic-ai/sdk for Claude API integration
+- Created POST /api/resume/generate API route
+  - Server-sent events (SSE) streaming response
+  - Claude claude-sonnet-4-20250514 model for translation
+  - System prompt optimized for military-to-civilian translation
+  - Generates: summary, skills, translated bullets, tips
+- Created resume builder page at /tools/resume-builder
+  - Step 1: Branch, rank, MOS/AFSC, years of service
+  - Step 2: 2-6 accomplishments, target industry/role
+  - Step 3: Streaming results with copy/download options
+  - Real-time streaming display during generation
+  - Copy to clipboard and download as text
+  - Email capture integration
+- Added .env.local for API key (gitignored)
+- **Commit:** Agent: Complete ai-resume features
 
-## Summary - Career Translation Tools Progress
-Two of three Career Translation Tools complete:
-1. Defense to Corporate Translator (/tools/translator)
-2. Degree & Cert ROI Calculator (/tools/roi-calculator)
+## Current State
+- Last working commit: ai-resume features
+- Features completed: 16
+- Features remaining: 3 (testing, performance, deployment)
+
+## Summary - All 6 MVP Tools Complete!
+All tools are now functional:
+
+**Financial Reality Tools:**
+1. Tax Impact Calculator (/tools/tax-calculator)
+2. VA Loan Rent vs Buy (/tools/va-loan-calculator)
+3. Compensation Comparison (/tools/comp-comparison)
+
+**Career Translation Tools:**
+4. Defense to Corporate Translator (/tools/translator)
+5. Degree & Cert ROI Calculator (/tools/roi-calculator)
+6. AI Resume Builder (/tools/resume-builder)
 
 Remaining:
-- Features 13-14: AI Resume Builder (requires LLM API integration)
 - Features 17-19: Testing, Performance, Deployment
-
-**Note:** All 5 MVP tools (excluding AI Resume) are now functional.
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign
