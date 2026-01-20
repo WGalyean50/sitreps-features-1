@@ -102,7 +102,7 @@
         "Email capture for saving results works",
         "Mobile responsive"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "va-loan-calculator-backend",

@@ -80,10 +80,23 @@
 - Build passes with all routes marked as dynamic
 - **Commit:** Agent: Complete tax-calculator-backend
 
+### Session 2 - Feature 8: tax-calculator-ui
+- Created full tax calculator page at /tools/tax-calculator
+  - Step 1: Military info (rank, years, zip, dependents)
+  - Step 2: Civilian scenarios (up to 3 with salary, state, bonus)
+  - Step 3: Results with side-by-side comparison table
+- Integrated with backend APIs for pay lookup and tax calculation
+- Shows civilian equivalent salary as headline result
+- Displays tax breakdown (federal, state, FICA) for comparison
+- Includes SaveResultsButton for email capture
+- Analytics events: tool_started, tool_step_completed, tool_completed
+- Mobile responsive with grid layouts
+- **Commit:** Agent: Complete tax-calculator-ui
+
 ## Current State
-- Last working commit: tax-calculator-backend
-- Features completed: 7
-- Features remaining: 12 (see features.json)
+- Last working commit: tax-calculator-ui
+- Features completed: 8
+- Features remaining: 11 (see features.json)
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign
