@@ -202,8 +202,8 @@ export default function TaxCalculatorPage() {
 
   return (
     <ToolLayout
-      title="Tax Impact Calculator"
-      description="Compare your military compensation to civilian job offers and see what salary you really need to maintain your take-home pay."
+      title="Military Pay Comparison Calculator"
+      description="Compare your military compensation to civilian job offers. See what salary you really need to match your tax-free BAH, BAS, and benefits."
     >
       <div className="mb-8">
         <StepIndicator currentStep={currentStep} totalSteps={3} />

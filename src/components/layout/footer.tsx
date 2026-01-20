@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const footerLinks = {
   tools: [
-    { name: "Tax Calculator", href: "/tools/tax-calculator" },
+    { name: "Military Pay Comparison", href: "/tools/tax-calculator" },
     { name: "VA Loan Calculator", href: "/tools/va-loan-calculator" },
     { name: "Comp Comparison", href: "/tools/comp-comparison" },
     { name: "Resume Builder", href: "/tools/resume-builder" },

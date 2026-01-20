@@ -9,21 +9,21 @@ import {
 
 const featuredTools = [
   {
-    title: "Tax Impact Calculator",
-    description: "Compare your military compensation to civilian offers in real take-home terms.",
+    title: "Military Pay Comparison",
+    description: "Compare your military compensation to civilian offers. See what salary you really need.",
     href: "/tools/tax-calculator",
     iconName: "Calculator",
   },
   {
     title: "VA Loan Rent vs Buy",
     description: "Calculate whether renting or buying makes more financial sense with your VA loan benefit.",
-    href: "/tools/va-loan",
+    href: "/tools/va-loan-calculator",
     iconName: "Home",
   },
   {
     title: "Compensation Comparison",
     description: "Compare total compensation across multiple job offers including equity and benefits.",
-    href: "/tools/compensation",
+    href: "/tools/comp-comparison",
     iconName: "DollarSign",
   },
 ];

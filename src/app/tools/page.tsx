@@ -2,8 +2,8 @@ import { ToolCard } from "@/components/tool-card";
 
 const financialTools = [
   {
-    title: "Tax Impact Calculator",
-    description: "Compare your military compensation to civilian offers in real take-home terms. Includes BAH, BAS, and state tax calculations.",
+    title: "Military Pay Comparison",
+    description: "Compare your military compensation to civilian offers. See what salary you need to match your tax-free BAH, BAS, and benefits.",
     href: "/tools/tax-calculator",
     iconName: "Calculator",
   },

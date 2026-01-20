@@ -96,3 +96,15 @@ doesn't look like hte resume builder is done yet, getting a 404 there
 sorry, getting a 404 when clicking resume builder in the footer
 ```
 
+### 22:25:45
+
+```
+for the compensation comparison tool, can we include military pay as well - choose your years of service, rank, and zip code (to calculate BAH)? and what the equivalent civilian pre-tax pay would need to be to equate to that? 
+```
+
+### 22:27:49
+
+```
+let's rename the tax impact calculator to Military Pay Comparison Calculator
+```
+
