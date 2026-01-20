@@ -74,7 +74,7 @@
         "Custom events fire: tool_started, tool_completed, email_captured",
         "Events visible in analytics dashboard (or logged in dev)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "tax-calculator-backend",

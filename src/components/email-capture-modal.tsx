@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { emailCaptured, track, EVENTS } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +54,9 @@ export function EmailCaptureModal({
 
       setStatus("success");
       onSuccess?.(email);
+
+      // Track email capture event
+      emailCaptured(toolName || "unknown");
 
       // Auto-close after success
       setTimeout(() => {
@@ -180,8 +184,15 @@ export function useEmailCapture(toolName?: string) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [hasCaptured, setHasCaptured] = React.useState(false);
 
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
+  const open = () => {
+    track(EVENTS.EMAIL_MODAL_OPENED, { tool_name: toolName || "unknown" });
+    setIsOpen(true);
+  };
+
+  const close = () => {
+    track(EVENTS.EMAIL_MODAL_CLOSED, { tool_name: toolName || "unknown" });
+    setIsOpen(false);
+  };
 
   const onSuccess = () => {
     setHasCaptured(true);
