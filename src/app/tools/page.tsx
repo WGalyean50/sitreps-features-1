@@ -10,13 +10,13 @@ const financialTools = [
   {
     title: "VA Loan Rent vs Buy",
     description: "Calculate whether renting or buying makes more financial sense with your VA loan benefit. Includes break-even analysis.",
-    href: "/tools/va-loan",
+    href: "/tools/va-loan-calculator",
     iconName: "Home",
   },
   {
     title: "Compensation Comparison",
     description: "Compare total compensation across multiple job offers including base salary, bonus, equity, and benefits.",
-    href: "/tools/compensation",
+    href: "/tools/comp-comparison",
     iconName: "DollarSign",
   },
 ];

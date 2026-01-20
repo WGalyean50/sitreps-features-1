@@ -203,7 +203,7 @@
         "Example career paths displayed",
         "Email capture works"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "roi-calculator-feature",
