@@ -23,7 +23,7 @@
         "CSS variables available for colors",
         "Professional, non-militaristic visual style"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "shared-components",
