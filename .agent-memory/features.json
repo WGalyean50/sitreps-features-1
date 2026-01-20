@@ -159,7 +159,7 @@
         "Email capture works",
         "Mobile responsive"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "ai-resume-backend",
