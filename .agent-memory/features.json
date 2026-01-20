@@ -1,0 +1,265 @@
+{
+  "features": [
+    {
+      "id": "foundation-scaffolding",
+      "description": "Next.js 14+ project with App Router, Tailwind CSS, shadcn/ui, and basic folder structure",
+      "priority": 1,
+      "verification": [
+        "npm run dev starts without errors",
+        "Tailwind classes apply correctly",
+        "shadcn/ui Button component renders",
+        "TypeScript strict mode enabled",
+        "Folder structure exists: /app, /components, /lib, /data, /types"
+      ],
+      "passes": false
+    },
+    {
+      "id": "design-system",
+      "description": "Color palette, typography, and design tokens configured in Tailwind theme",
+      "priority": 2,
+      "verification": [
+        "Primary colors (blues) defined in tailwind.config",
+        "Typography scale (h1-h4, body) configured",
+        "CSS variables available for colors",
+        "Professional, non-militaristic visual style"
+      ],
+      "passes": false
+    },
+    {
+      "id": "shared-components",
+      "description": "Reusable UI components: ToolCard, StepIndicator, ResultsCard, ComparisonTable, inputs",
+      "priority": 3,
+      "verification": [
+        "ToolCard component exists and renders with props",
+        "StepIndicator shows Step X of Y",
+        "CurrencyInput handles formatting",
+        "LocationSelect has state dropdown",
+        "All components are mobile responsive"
+      ],
+      "passes": false
+    },
+    {
+      "id": "layout-and-navigation",
+      "description": "Header, Footer, ToolLayout, homepage, and tools hub page",
+      "priority": 4,
+      "verification": [
+        "Header with logo and nav renders",
+        "Footer with links renders",
+        "Homepage (/) loads with hero and CTA",
+        "Tools Hub (/tools) displays tool cards",
+        "Mobile navigation menu works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "email-capture-system",
+      "description": "Email capture modal, API route, and email service integration",
+      "priority": 5,
+      "verification": [
+        "Email capture modal opens and validates input",
+        "POST /api/email/capture stores email",
+        "Email confirmation sends (or logs in dev)",
+        "Rate limiting prevents abuse",
+        "Privacy policy link present"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-integration",
+      "description": "PostHog/Mixpanel tracking for page views and custom events",
+      "priority": 6,
+      "verification": [
+        "Analytics script loads on pages",
+        "Page views tracked",
+        "Custom events fire: tool_started, tool_completed, email_captured",
+        "Events visible in analytics dashboard (or logged in dev)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tax-calculator-backend",
+      "description": "Military pay data and tax calculation APIs",
+      "priority": 7,
+      "verification": [
+        "GET /api/military/pay returns pay for rank/years",
+        "GET /api/military/bah returns BAH for zip/rank/dependents",
+        "POST /api/tax/calculate returns federal + state tax breakdown",
+        "All 50 states supported including 0% tax states",
+        "Data sourced from DFAS with timestamp"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tax-calculator-ui",
+      "description": "Tax Impact Calculator full UI with 3-step flow",
+      "priority": 8,
+      "verification": [
+        "Step 1: Rank dropdown, zip code, dependents inputs work",
+        "BAH/BAS/base pay auto-populate after Step 1",
+        "Step 2: Civilian salary + state, add up to 3 scenarios",
+        "Step 3: Side-by-side results with monthly/annual net",
+        "Headline shows civilian equivalent needed",
+        "Email capture for saving results works",
+        "Mobile responsive"
+      ],
+      "passes": false
+    },
+    {
+      "id": "va-loan-calculator-backend",
+      "description": "VA loan calculation APIs for rent vs buy comparison",
+      "priority": 9,
+      "verification": [
+        "VA funding fee calculates correctly (first-time vs subsequent)",
+        "Mortgage amortization for 15/30 year works",
+        "POST /api/housing/compare returns comparison data",
+        "Break-even year calculated",
+        "Opportunity cost of down payment included"
+      ],
+      "passes": false
+    },
+    {
+      "id": "va-loan-calculator-ui",
+      "description": "VA Loan Rent vs Buy Calculator full UI",
+      "priority": 10,
+      "verification": [
+        "Rent and home price inputs work",
+        "VA loan options (term, down payment) selectable",
+        "Results show costs at 1, 3, 5, 10 year marks",
+        "Graph visualizes cumulative cost (Recharts)",
+        "Break-even year clearly displayed",
+        "Email capture works",
+        "Mobile responsive"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comp-comparison-backend",
+      "description": "Compensation comparison APIs for job offers",
+      "priority": 11,
+      "verification": [
+        "POST /api/compensation/compare accepts 2-4 offers",
+        "Equity valuation (options, RSUs, vesting) works",
+        "Benefits valuation (401k, healthcare, PTO) works",
+        "COL adjustment by location works",
+        "Returns Year 1, 2, 4 total comp"
+      ],
+      "passes": false
+    },
+    {
+      "id": "comp-comparison-ui",
+      "description": "Compensation Comparison Tool full UI",
+      "priority": 12,
+      "verification": [
+        "Offer input with all fields (base, bonus, equity) works",
+        "Equity section handles options and RSUs",
+        "Add up to 4 offers",
+        "Results show Year 1, 2, 4 comparison",
+        "Winner highlighted per timeframe",
+        "Equity disclaimer shown",
+        "Email capture works",
+        "Mobile responsive"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-resume-backend",
+      "description": "AI integration and resume generation APIs",
+      "priority": 13,
+      "verification": [
+        "LLM API client configured (OpenAI or Anthropic)",
+        "POST /api/resume/generate accepts military experience",
+        "AI translates military jargon to civilian",
+        "Generates quantified bullet points",
+        "Streaming response works",
+        "Processing < 30 seconds"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-resume-ui",
+      "description": "AI Resume Builder full UI with input, generation, and download",
+      "priority": 14,
+      "verification": [
+        "Branch and MOS/AFSC input works",
+        "Accomplishments input (3-5 items) works",
+        "Target industry selection works",
+        "Generation progress shows during streaming",
+        "Results display translated bullets and skills",
+        "PDF and Word download work (email required)",
+        "Mobile responsive"
+      ],
+      "passes": false
+    },
+    {
+      "id": "translator-feature",
+      "description": "Defense to Corporate Translator with mapping data and UI",
+      "priority": 15,
+      "verification": [
+        "GET /api/translator/mapping returns staff function mappings",
+        "All G/J/A/N/S staff sections covered",
+        "UI shows interactive staff function selector",
+        "Corporate equivalents display with job titles",
+        "My Path generator works",
+        "Example career paths displayed",
+        "Email capture works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "roi-calculator-feature",
+      "description": "Degree/Cert ROI Calculator with data and UI",
+      "priority": 16,
+      "verification": [
+        "Credential library with costs exists",
+        "POST /api/roi/calculate returns break-even and NPV",
+        "GI Bill benefit calculation works",
+        "UI shows credential selection and current salary input",
+        "Results display break-even timeline",
+        "Comparison mode (2 credentials) works",
+        "Email capture works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "testing-and-qa",
+      "description": "Cross-tool testing, accessibility audit, browser testing",
+      "priority": 17,
+      "verification": [
+        "All 6 tools work end-to-end on desktop",
+        "All 6 tools work on mobile",
+        "Keyboard navigation works",
+        "No critical accessibility issues",
+        "Email capture tested for all tools",
+        "Analytics events firing correctly"
+      ],
+      "passes": false
+    },
+    {
+      "id": "performance-optimization",
+      "description": "Lighthouse score optimization, code splitting, caching",
+      "priority": 18,
+      "verification": [
+        "Lighthouse performance score > 90",
+        "LCP < 2.5s",
+        "Images optimized with Next.js Image",
+        "Code splitting implemented",
+        "Static pages pre-rendered"
+      ],
+      "passes": false
+    },
+    {
+      "id": "deployment-ready",
+      "description": "Production deployment configuration and launch checklist",
+      "priority": 19,
+      "verification": [
+        "Vercel (or platform) configured",
+        "Environment variables set",
+        "Error monitoring integrated",
+        "SEO meta tags verified",
+        "All disclaimers and privacy policy linked",
+        "All 6 tools functional in production"
+      ],
+      "passes": false
+    }
+  ]
+}
