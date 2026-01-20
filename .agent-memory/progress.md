@@ -176,19 +176,43 @@
 - Analytics events: tool_started, translator_section_selected
 - **Commit:** Agent: Complete translator-feature
 
+### Session 3 - Feature 16: roi-calculator-feature
+- Created credentials data file (src/data/credentials.ts)
+  - GI Bill benefit data (Post-9/11 rates, MHA, book stipend)
+  - 15 credentials: 4 degrees, 8 certifications, 4 bootcamps
+  - Cost ranges, time to complete, salary increase estimates
+  - Pass rates, employment rates, job demand levels
+  - NPV and break-even calculation functions
+- Created POST /api/roi/calculate API route
+  - Single credential ROI calculation
+  - Comparison mode for 2 credentials
+  - GI Bill benefit integration
+  - Returns: break-even, NPV, cumulative returns, ROI percentages
+- Created ROI calculator page at /tools/roi-calculator
+  - Step 1: Current salary, experience level, GI Bill checkbox
+  - Step 2: Browse and select up to 2 credentials with filters
+  - Step 3: Detailed results with cost breakdown, GI Bill usage
+  - Side-by-side comparison with winner highlighting
+  - 10-year cumulative returns table
+  - Email capture integration
+- Fixed tools hub page links (roi → roi-calculator)
+- **Commit:** Agent: Complete roi-calculator-feature
+
 ## Current State
-- Last working commit: translator-feature
-- Features completed: 13
-- Features remaining: 6 (see features.json)
+- Last working commit: roi-calculator-feature
+- Features completed: 14
+- Features remaining: 5 (see features.json)
 
-## Summary - Career Translation Started
-First Career Translation Tool complete:
+## Summary - Career Translation Tools Progress
+Two of three Career Translation Tools complete:
 1. Defense to Corporate Translator (/tools/translator)
+2. Degree & Cert ROI Calculator (/tools/roi-calculator)
 
-Remaining features:
-- Feature 16: Degree/Cert ROI Calculator
+Remaining:
 - Features 13-14: AI Resume Builder (requires LLM API integration)
 - Features 17-19: Testing, Performance, Deployment
+
+**Note:** All 5 MVP tools (excluding AI Resume) are now functional.
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign

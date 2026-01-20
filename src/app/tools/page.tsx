@@ -37,7 +37,7 @@ const careerTools = [
   {
     title: "Degree & Cert ROI Calculator",
     description: "Calculate the return on investment for degrees, certifications, and bootcamps. Includes GI Bill benefits.",
-    href: "/tools/roi",
+    href: "/tools/roi-calculator",
     iconName: "GraduationCap",
   },
 ];

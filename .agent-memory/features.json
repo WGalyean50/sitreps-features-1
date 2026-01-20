@@ -218,7 +218,7 @@
         "Comparison mode (2 credentials) works",
         "Email capture works"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "testing-and-qa",
