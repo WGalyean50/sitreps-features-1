@@ -39,9 +39,16 @@ export default function HomePage() {
               Demo Features for Sitreps.com
             </h1>
             <p className="mt-6 text-body-lg text-muted-foreground">
-              Self-service tools built by veterans, for veterans. Calculate your true
-              compensation, translate your experience, and plan your next move with
-              confidence.
+              Based on feature requests on{" "}
+              <a
+                href="https://www.linkedin.com/posts/sitreps-2-steercos_we-are-continuing-to-overhaul-sitreps-dot-activity-7419082631029420032-TKM3?utm_source=share&utm_medium=member_desktop&rcm=ACoAAAnmLtQBnrR5yznpuGDDfIbujQycKwMHQWI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                LinkedIn
+              </a>
+              , as of 2026-01-19
             </p>
             <p className="mt-4 text-sm text-muted-foreground">
               Built by{" "}
