@@ -174,3 +174,15 @@ can you include the "heatmap" of job openings/placements? create dummy data for 
 remove everything in the footer that isn't connected to a real feature on this site
 ```
 
+### 23:03:43
+
+```
+also what model does the anthropic api key currently use for the resume generation? 
+```
+
+### 23:04:23
+
+```
+no that's fine. remove "tools" from the header" 
+```
+

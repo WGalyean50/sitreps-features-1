@@ -4,9 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-const navigation = [
-  { name: "Tools", href: "/tools" },
-];
+const navigation: { name: string; href: string }[] = [];
 
 export function Header() {
   return (
