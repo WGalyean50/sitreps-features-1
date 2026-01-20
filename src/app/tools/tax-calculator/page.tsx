@@ -67,6 +67,7 @@ export default function MilitaryPayComparisonPage() {
   const [results, setResults] = React.useState<MilitaryPayResult | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [sortBy, setSortBy] = React.useState<"salary" | "state">("salary");
+  const [statesOfInterest, setStatesOfInterest] = React.useState("");
 
   const rankOptions = getRankOptions();
 
@@ -115,13 +116,29 @@ export default function MilitaryPayComparisonPage() {
 
   const isFormValid = militaryInfo.grade && militaryInfo.zipCode.length === 5;
 
+  // Parse states of interest into an array of state codes
+  const parsedStatesOfInterest = React.useMemo(() => {
+    if (!statesOfInterest.trim()) return [];
+    return statesOfInterest
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter((s) => s.length === 2);
+  }, [statesOfInterest]);
+
   // Filter and sort states
   const filteredStates = React.useMemo(() => {
     if (!results) return [];
 
     let states = results.stateEquivalents;
 
-    // Filter by search
+    // Filter by states of interest (if specified)
+    if (parsedStatesOfInterest.length > 0) {
+      states = states.filter((s) =>
+        parsedStatesOfInterest.includes(s.stateCode)
+      );
+    }
+
+    // Filter by search (additional filter on top of states of interest)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       states = states.filter(
@@ -138,7 +155,7 @@ export default function MilitaryPayComparisonPage() {
     // Already sorted by salary from API
 
     return states;
-  }, [results, searchTerm, sortBy]);
+  }, [results, parsedStatesOfInterest, searchTerm, sortBy]);
 
   return (
     <ToolLayout
@@ -228,6 +245,21 @@ export default function MilitaryPayComparisonPage() {
               </div>
             </div>
 
+            {/* States of Interest */}
+            <div className="space-y-2">
+              <Label htmlFor="states">States of Interest (optional)</Label>
+              <Input
+                id="states"
+                type="text"
+                value={statesOfInterest}
+                onChange={(e) => setStatesOfInterest(e.target.value.toUpperCase())}
+                placeholder="TX, CA, WA, FL"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter state codes separated by commas. Leave blank to see all 50 states.
+              </p>
+            </div>
+
             <div className="flex justify-end pt-4">
               <Button onClick={calculateEquivalents} disabled={!isFormValid || isLoading} size="lg">
                 {isLoading ? (
@@ -302,7 +334,7 @@ export default function MilitaryPayComparisonPage() {
               variant="info"
               title="Average Across All States"
               value={formatCurrency(results.summary.averageSalaryNeeded)}
-              subtitle="50 states + DC"
+              subtitle={parsedStatesOfInterest.length > 0 ? `Showing ${filteredStates.length} states` : "50 states + DC"}
             />
             <ResultsCard
               variant="warning"
@@ -400,7 +432,9 @@ export default function MilitaryPayComparisonPage() {
 
               {filteredStates.length === 0 && (
                 <p className="text-center py-8 text-muted-foreground">
-                  No states match your search.
+                  {parsedStatesOfInterest.length > 0
+                    ? `No matching states found. Check your state codes: ${statesOfInterest}`
+                    : "No states match your search."}
                 </p>
               )}
             </CardContent>
