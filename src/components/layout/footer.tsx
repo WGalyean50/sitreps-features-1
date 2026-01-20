@@ -4,9 +4,9 @@ import Link from "next/link";
 const footerLinks = {
   tools: [
     { name: "Tax Calculator", href: "/tools/tax-calculator" },
-    { name: "VA Loan Calculator", href: "/tools/va-loan" },
-    { name: "Comp Comparison", href: "/tools/compensation" },
-    { name: "Resume Builder", href: "/tools/resume" },
+    { name: "VA Loan Calculator", href: "/tools/va-loan-calculator" },
+    { name: "Comp Comparison", href: "/tools/comp-comparison" },
+    { name: "Resume Builder", href: "/tools/resume-builder" },
   ],
   resources: [
     { name: "Blog", href: "/blog" },
