@@ -156,3 +156,9 @@ remove the hamburger top right
 change the homepage's subtitle to "based on feature requests on LinkedIn, as of 2026-01-19" with LinkedIn linking to this URL: https://www.linkedin.com/posts/sitreps-2-steercos_we-are-continuing-to-overhaul-sitreps-dot-activity-7419082631029420032-TKM3?utm_source=share&utm_medium=member_desktop&rcm=ACoAAAnmLtQBnrR5yznpuGDDfIbujQycKwMHQWI
 ```
 
+### 22:54:29
+
+```
+and remove the About and Resources bits in the header, they're worthless. 
+```
+
