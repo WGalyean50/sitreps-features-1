@@ -15,6 +15,9 @@ interface MilitaryEquivalentRequest {
   zipCode: string;
   withDependents: boolean;
   filingStatus?: "single" | "married";
+  separationType?: "ets" | "retiree";
+  retirementSystem?: "HIGH_3" | "BRS";
+  monthlyRetirementPay?: number;
 }
 
 /**
@@ -28,7 +31,18 @@ interface MilitaryEquivalentRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: MilitaryEquivalentRequest = await request.json();
-    const { grade, yearsOfService, zipCode, withDependents, filingStatus = "single" } = body;
+    const {
+      grade,
+      yearsOfService,
+      zipCode,
+      withDependents,
+      filingStatus = "single",
+      separationType = "ets",
+      monthlyRetirementPay = 0,
+    } = body;
+
+    // Calculate annual retirement income for retirees
+    const annualRetirementPay = separationType === "retiree" ? monthlyRetirementPay * 12 : 0;
 
     // Validate
     if (!grade || !zipCode) {
@@ -67,10 +81,44 @@ export async function POST(request: NextRequest) {
 
     // Calculate equivalent civilian salary for each state
     const stateEquivalents = Object.entries(STATE_TAXES).map(([stateCode, stateInfo]) => {
-      // Binary search to find the civilian salary that produces the same net income
-      const targetNet = militaryNetIncome;
-      let low = targetNet; // At minimum, need this much gross
-      let high = targetNet * 2; // At most, need 2x (very high tax scenario)
+      // For retirees, they have retirement income, so they need LESS civilian salary
+      // Retirement pay is taxable income (federal + state)
+      // Formula: civilian_net + retirement_net = military_net
+      // So: civilian_salary - civilian_taxes + retirement_pay - retirement_taxes = military_net
+
+      // First, calculate net retirement income (retirement pay minus its taxes)
+      let retirementNetIncome = 0;
+      if (annualRetirementPay > 0) {
+        const retirementFederalTax = calculateFederalTax(annualRetirementPay, filingStatus);
+        const retirementStateTax = calculateStateTax(annualRetirementPay, stateCode);
+        // No FICA on retirement pay
+        retirementNetIncome = annualRetirementPay - retirementFederalTax - retirementStateTax;
+      }
+
+      // The target civilian net income is what's left after accounting for retirement
+      const targetCivilianNet = militaryNetIncome - retirementNetIncome;
+
+      // If retirement income covers everything, they don't need a civilian job
+      if (targetCivilianNet <= 0) {
+        return {
+          stateCode,
+          stateName: stateInfo.name,
+          taxType: stateInfo.type === "graduated" ? "progressive" : stateInfo.type,
+          equivalentSalary: 0,
+          federalTax: 0,
+          stateTax: 0,
+          ficaTotal: 0,
+          totalTax: 0,
+          effectiveRate: 0,
+          premiumOverMilitary: -annualTotal,
+          premiumPercent: -100,
+          retirementIncomeCoversAll: true,
+        };
+      }
+
+      // Binary search to find the civilian salary that produces the target civilian net
+      let low = targetCivilianNet * 0.5; // Could be lower due to retirement covering part
+      let high = targetCivilianNet * 2; // At most, need 2x (very high tax scenario)
 
       // Iterate to find the right salary
       for (let i = 0; i < 20; i++) {
@@ -80,12 +128,12 @@ export async function POST(request: NextRequest) {
         const fica = calculateFICA(mid);
         const netIncome = mid - federalTax - stateTax - fica.total;
 
-        if (Math.abs(netIncome - targetNet) < 100) {
+        if (Math.abs(netIncome - targetCivilianNet) < 100) {
           // Close enough
           break;
         }
 
-        if (netIncome < targetNet) {
+        if (netIncome < targetCivilianNet) {
           low = mid;
         } else {
           high = mid;
@@ -128,12 +176,21 @@ export async function POST(request: NextRequest) {
     const flatTaxStates = stateEquivalents.filter((s) => s.taxType === "flat");
     const progressiveStates = stateEquivalents.filter((s) => s.taxType === "progressive");
 
+    // Generate insight based on separation type
+    let insight = "";
+    if (separationType === "retiree" && annualRetirementPay > 0) {
+      insight = `As a retiree receiving ${formatCurrency(annualRetirementPay)}/year in retirement pay, you'll need less civilian income. To match your military take-home of ${formatCurrency(militaryNetIncome)}/year, you'd need a civilian salary ranging from ${formatCurrency(stateEquivalents[0].equivalentSalary)} in ${stateEquivalents[0].stateName} to ${formatCurrency(stateEquivalents[stateEquivalents.length - 1].equivalentSalary)} in ${stateEquivalents[stateEquivalents.length - 1].stateName}, combined with your retirement pension.`;
+    } else {
+      insight = `To match your military take-home pay of ${formatCurrency(militaryNetIncome)}/year, you'd need a civilian salary ranging from ${formatCurrency(stateEquivalents[0].equivalentSalary)} in ${stateEquivalents[0].stateName} to ${formatCurrency(stateEquivalents[stateEquivalents.length - 1].equivalentSalary)} in ${stateEquivalents[stateEquivalents.length - 1].stateName}.`;
+    }
+
     return NextResponse.json({
       military: {
         grade,
         yearsOfService,
         zipCode,
         withDependents,
+        separationType,
         monthly: {
           basePay: Math.round(basePay),
           bah: Math.round(bah),
@@ -160,6 +217,10 @@ export async function POST(request: NextRequest) {
         },
         effectiveRate: Math.round((militaryTotalTax / annualTotal) * 1000) / 10,
       },
+      retirement: separationType === "retiree" ? {
+        monthlyPay: Math.round(monthlyRetirementPay),
+        annualPay: Math.round(annualRetirementPay),
+      } : null,
       stateEquivalents,
       summary: {
         lowestSalaryNeeded: stateEquivalents[0],
@@ -171,7 +232,7 @@ export async function POST(request: NextRequest) {
         flatTaxStates,
         progressiveStates,
       },
-      insight: `To match your military take-home pay of ${formatCurrency(militaryNetIncome)}/year, you'd need a civilian salary ranging from ${formatCurrency(stateEquivalents[0].equivalentSalary)} in ${stateEquivalents[0].stateName} to ${formatCurrency(stateEquivalents[stateEquivalents.length - 1].equivalentSalary)} in ${stateEquivalents[stateEquivalents.length - 1].stateName}.`,
+      insight,
     });
   } catch (error) {
     console.error("[Military Equivalent Error]", error);

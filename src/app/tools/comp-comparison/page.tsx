@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResultsCard } from "@/components/results-card";
-import { SaveResultsButton } from "@/components/save-results-button";
 import { FinancialDisclaimer } from "@/components/disclaimer";
 import { CurrencyInput } from "@/components/currency-input";
 import { toolStarted, toolCompleted } from "@/lib/analytics";
 import { getLocationOptions, type JobOffer, type VestingSchedule } from "@/data/compensation";
-import { Plus, Trash2, Loader2, Building2, Trophy, DollarSign } from "lucide-react";
+import { Loader2, Trophy, Check } from "lucide-react";
 
 const TOOL_NAME = "comp-comparison";
 
@@ -56,8 +54,8 @@ interface ComparisonResult {
   }>;
 }
 
-const defaultOffer = (): OfferFormData => ({
-  id: Date.now().toString(),
+const defaultOffer = (name: string): OfferFormData => ({
+  id: Date.now().toString() + name,
   companyName: "",
   location: "remote",
   baseSalary: 0,
@@ -75,10 +73,8 @@ const defaultOffer = (): OfferFormData => ({
 
 export default function CompComparisonPage() {
   const [isLoading, setIsLoading] = React.useState(false);
-  const [offers, setOffers] = React.useState<OfferFormData[]>([
-    defaultOffer(),
-    { ...defaultOffer(), id: Date.now().toString() + "1" },
-  ]);
+  const [offerA, setOfferA] = React.useState<OfferFormData>(defaultOffer("A"));
+  const [offerB, setOfferB] = React.useState<OfferFormData>(defaultOffer("B"));
   const [results, setResults] = React.useState<ComparisonResult | null>(null);
 
   const locationOptions = getLocationOptions();
@@ -87,29 +83,21 @@ export default function CompComparisonPage() {
     toolStarted(TOOL_NAME);
   }, []);
 
-  const addOffer = () => {
-    if (offers.length < 4) {
-      setOffers([...offers, defaultOffer()]);
-    }
+  const updateOfferA = (field: keyof OfferFormData, value: unknown) => {
+    setOfferA({ ...offerA, [field]: value });
   };
 
-  const removeOffer = (id: string) => {
-    if (offers.length > 2) {
-      setOffers(offers.filter((o) => o.id !== id));
-    }
-  };
-
-  const updateOffer = (id: string, field: keyof OfferFormData, value: unknown) => {
-    setOffers(offers.map((o) => (o.id === id ? { ...o, [field]: value } : o)));
+  const updateOfferB = (field: keyof OfferFormData, value: unknown) => {
+    setOfferB({ ...offerB, [field]: value });
   };
 
   const handleCompare = async () => {
     setIsLoading(true);
     try {
-      // Transform form data to API format
-      const apiOffers: JobOffer[] = offers.map((o) => ({
+      const offers = [offerA, offerB];
+      const apiOffers: JobOffer[] = offers.map((o, i) => ({
         id: o.id,
-        companyName: o.companyName || `Offer ${offers.indexOf(o) + 1}`,
+        companyName: o.companyName || `Offer ${i === 0 ? "A" : "B"}`,
         location: o.location,
         baseSalary: o.baseSalary,
         signingBonus: o.signingBonus,
@@ -150,201 +138,415 @@ export default function CompComparisonPage() {
     }).format(value);
   };
 
-  const isValid = offers.every((o) => o.baseSalary > 0);
+  const isValid = offerA.baseSalary > 0 && offerB.baseSalary > 0;
 
-  return (
-    <ToolLayout
-      title="Compensation Comparison Tool"
-      description="Compare total compensation across job offers including salary, equity, bonuses, and benefits. See which offer wins over 1, 2, and 4 years."
+  // Helper to render a form field row
+  const FormRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="grid grid-cols-[140px_1fr_1fr] gap-4 items-center py-3 border-b border-border/50">
+      <Label className="text-sm text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+
+  // Helper to render select
+  const SelectField = ({
+    value,
+    onChange,
+    options,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+    options: { value: string; label: string }[];
+  }) => (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
     >
-      <div className="space-y-8">
-        {/* Offer Forms */}
-        {offers.map((offer, index) => (
-          <Card key={offer.id}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                <Input
-                  value={offer.companyName}
-                  onChange={(e) => updateOffer(offer.id, "companyName", e.target.value)}
-                  placeholder={`Company ${index + 1}`}
-                  className="max-w-[200px] text-lg font-semibold h-auto py-1"
-                />
-              </CardTitle>
-              {offers.length > 2 && (
-                <Button variant="ghost" size="sm" onClick={() => removeOffer(offer.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Cash Compensation */}
-              <div>
-                <h4 className="font-medium mb-4">Cash Compensation</h4>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <CurrencyInput
-                    id={`base-${offer.id}`}
-                    label="Base Salary"
-                    value={offer.baseSalary || undefined}
-                    onChange={(v) => updateOffer(offer.id, "baseSalary", v || 0)}
-                    placeholder="120,000"
-                  />
-                  <CurrencyInput
-                    id={`signing-${offer.id}`}
-                    label="Signing Bonus"
-                    value={offer.signingBonus || undefined}
-                    onChange={(v) => updateOffer(offer.id, "signingBonus", v || 0)}
-                    placeholder="0"
-                  />
-                  <div className="space-y-2">
-                    <Label htmlFor={`bonus-${offer.id}`}>Annual Bonus Target (%)</Label>
-                    <Input
-                      id={`bonus-${offer.id}`}
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={offer.annualBonusTarget || ""}
-                      onChange={(e) => updateOffer(offer.id, "annualBonusTarget", parseInt(e.target.value) || 0)}
-                      placeholder="15"
-                    />
-                  </div>
-                </div>
-              </div>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
 
-              {/* Location */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`location-${offer.id}`}>Location</Label>
-                  <select
-                    id={`location-${offer.id}`}
-                    value={offer.location}
-                    onChange={(e) => updateOffer(offer.id, "location", e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    {locationOptions.map((loc) => (
-                      <option key={loc.value} value={loc.value}>
-                        {loc.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+  if (results) {
+    const compA = results.comparisons[0];
+    const compB = results.comparisons[1];
+    const year1Winner = results.winners.find((w) => w.year === 1);
+    const year4Winner = results.winners.find((w) => w.year === 4);
 
-              {/* Equity */}
-              <div>
-                <h4 className="font-medium mb-4">Equity</h4>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`equity-type-${offer.id}`}>Equity Type</Label>
-                    <select
-                      id={`equity-type-${offer.id}`}
-                      value={offer.equityType}
-                      onChange={(e) => updateOffer(offer.id, "equityType", e.target.value as "options" | "rsus" | "none")}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      <option value="none">No Equity</option>
-                      <option value="rsus">RSUs</option>
-                      <option value="options">Stock Options</option>
-                    </select>
-                  </div>
+    const getYear = (comp: typeof compA, year: number) => comp.compensation.find((c) => c.year === year);
 
-                  {offer.equityType !== "none" && (
-                    <>
-                      <CurrencyInput
-                        id={`equity-value-${offer.id}`}
-                        label="Total Grant Value"
-                        value={offer.equityValue || undefined}
-                        onChange={(v) => updateOffer(offer.id, "equityValue", v || 0)}
-                        placeholder="100,000"
-                        helperText="Total value of 4-year grant"
-                      />
-                      <div className="space-y-2">
-                        <Label htmlFor={`vesting-${offer.id}`}>Vesting Schedule</Label>
-                        <select
-                          id={`vesting-${offer.id}`}
-                          value={offer.vestingSchedule}
-                          onChange={(e) => updateOffer(offer.id, "vestingSchedule", e.target.value as VestingSchedule)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="4year-1cliff">4 Year / 1 Year Cliff</option>
-                          <option value="4year-monthly">4 Year Monthly</option>
-                          <option value="3year-monthly">3 Year Monthly</option>
-                          <option value="immediate">Immediate</option>
-                        </select>
-                      </div>
-                    </>
+    return (
+      <ToolLayout
+        title="Offer Comparison Tool"
+        description="Compare total compensation across job offers"
+      >
+        <div className="space-y-6">
+          {/* Header Row */}
+          <div className="grid grid-cols-[140px_1fr_1fr] gap-4">
+            <div />
+            <Card className={year4Winner?.byTotalComp.companyName === compA.companyName ? "ring-2 ring-green-500" : ""}>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  {compA.companyName}
+                  {year4Winner?.byTotalComp.companyName === compA.companyName && (
+                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Trophy className="h-3 w-3" /> Winner
+                    </span>
                   )}
-                </div>
-              </div>
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className={year4Winner?.byTotalComp.companyName === compB.companyName ? "ring-2 ring-green-500" : ""}>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  {compB.companyName}
+                  {year4Winner?.byTotalComp.companyName === compB.companyName && (
+                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Trophy className="h-3 w-3" /> Winner
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
 
-              {/* Benefits */}
-              <div>
-                <h4 className="font-medium mb-4">Benefits</h4>
-                <div className="grid gap-4 sm:grid-cols-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`healthcare-${offer.id}`}>Healthcare</Label>
-                    <select
-                      id={`healthcare-${offer.id}`}
-                      value={offer.healthcareQuality}
-                      onChange={(e) => updateOffer(offer.id, "healthcareQuality", e.target.value as "excellent" | "good" | "basic" | "none")}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      <option value="excellent">Excellent (~$15k/yr)</option>
-                      <option value="good">Good (~$10k/yr)</option>
-                      <option value="basic">Basic (~$5k/yr)</option>
-                      <option value="none">None</option>
-                    </select>
+          {/* Results Comparison */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-1">
+                <FormRow label="Base Salary">
+                  <div className="font-medium">{formatCurrency(compA.baseSalary)}</div>
+                  <div className="font-medium">{formatCurrency(compB.baseSalary)}</div>
+                </FormRow>
+                <FormRow label="Location COL">
+                  <div>{compA.locationCOL}</div>
+                  <div>{compB.locationCOL}</div>
+                </FormRow>
+                <FormRow label="Year 1 Total">
+                  <div className={year1Winner?.byTotalComp.companyName === compA.companyName ? "font-bold text-green-600" : ""}>
+                    {formatCurrency(getYear(compA, 1)?.total || 0)}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`match-${offer.id}`}>401k Match</Label>
-                    <select
-                      id={`match-${offer.id}`}
-                      value={offer.has401kMatch ? `${offer.matchPercent}-${offer.maxMatchUpTo}` : "none"}
-                      onChange={(e) => {
-                        if (e.target.value === "none") {
-                          updateOffer(offer.id, "has401kMatch", false);
-                        } else {
-                          const [match, max] = e.target.value.split("-").map(Number);
-                          updateOffer(offer.id, "has401kMatch", true);
-                          updateOffer(offer.id, "matchPercent", match);
-                          updateOffer(offer.id, "maxMatchUpTo", max);
-                        }
-                      }}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      <option value="100-6">100% up to 6%</option>
-                      <option value="50-6">50% up to 6%</option>
-                      <option value="100-4">100% up to 4%</option>
-                      <option value="50-4">50% up to 4%</option>
-                      <option value="none">No Match</option>
-                    </select>
+                  <div className={year1Winner?.byTotalComp.companyName === compB.companyName ? "font-bold text-green-600" : ""}>
+                    {formatCurrency(getYear(compB, 1)?.total || 0)}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`pto-${offer.id}`}>PTO Days</Label>
-                    <Input
-                      id={`pto-${offer.id}`}
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={offer.ptoDays}
-                      onChange={(e) => updateOffer(offer.id, "ptoDays", parseInt(e.target.value) || 0)}
-                    />
+                </FormRow>
+                <FormRow label="Year 1 Cash">
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compA, 1)?.cash || 0)}</div>
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compB, 1)?.cash || 0)}</div>
+                </FormRow>
+                <FormRow label="Year 1 Equity">
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compA, 1)?.equity || 0)}</div>
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compB, 1)?.equity || 0)}</div>
+                </FormRow>
+                <FormRow label="Year 4 Total">
+                  <div className={year4Winner?.byTotalComp.companyName === compA.companyName ? "font-bold text-green-600" : ""}>
+                    {formatCurrency(getYear(compA, 4)?.total || 0)}
                   </div>
-                </div>
+                  <div className={year4Winner?.byTotalComp.companyName === compB.companyName ? "font-bold text-green-600" : ""}>
+                    {formatCurrency(getYear(compB, 4)?.total || 0)}
+                  </div>
+                </FormRow>
+                <FormRow label="Year 4 COL Adjusted">
+                  <div>{formatCurrency(getYear(compA, 4)?.colAdjusted || 0)}</div>
+                  <div>{formatCurrency(getYear(compB, 4)?.colAdjusted || 0)}</div>
+                </FormRow>
+                <FormRow label="Benefits Value">
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compA, 4)?.benefits || 0)}</div>
+                  <div className="text-muted-foreground">{formatCurrency(getYear(compB, 4)?.benefits || 0)}</div>
+                </FormRow>
               </div>
             </CardContent>
           </Card>
-        ))}
 
-        {/* Add Offer Button */}
-        {offers.length < 4 && (
-          <Button variant="outline" onClick={addOffer} className="w-full">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Another Offer
-          </Button>
-        )}
+          {/* Winner Summary */}
+          {year4Winner && (
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 p-2 rounded-full">
+                    <Trophy className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-green-800">
+                      {year4Winner.byTotalComp.companyName} wins by {formatCurrency(year4Winner.byTotalComp.margin)} over 4 years
+                    </p>
+                    <p className="text-sm text-green-700">
+                      Total compensation: {formatCurrency(year4Winner.byTotalComp.value)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={() => setResults(null)} className="flex-1">
+              Modify Offers
+            </Button>
+          </div>
+
+          <FinancialDisclaimer />
+        </div>
+      </ToolLayout>
+    );
+  }
+
+  return (
+    <ToolLayout
+      title="Offer Comparison Tool"
+      description="Compare total compensation across two job offers side by side. See which offer wins over 1, 2, and 4 years."
+    >
+      <div className="space-y-6">
+        {/* Header Row */}
+        <div className="grid grid-cols-[140px_1fr_1fr] gap-4">
+          <div />
+          <Card>
+            <CardHeader className="pb-2">
+              <Input
+                value={offerA.companyName}
+                onChange={(e) => updateOfferA("companyName", e.target.value)}
+                placeholder="Offer A"
+                className="text-lg font-semibold border-0 p-0 h-auto focus-visible:ring-0"
+              />
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <Input
+                value={offerB.companyName}
+                onChange={(e) => updateOfferB("companyName", e.target.value)}
+                placeholder="Offer B"
+                className="text-lg font-semibold border-0 p-0 h-auto focus-visible:ring-0"
+              />
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Form Fields */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-1">
+              {/* Cash Compensation */}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pb-2">Cash Compensation</p>
+
+              <FormRow label="Base Salary">
+                <CurrencyInput
+                  id="base-a"
+                  value={offerA.baseSalary || undefined}
+                  onChange={(v) => updateOfferA("baseSalary", v || 0)}
+                  placeholder="120,000"
+                />
+                <CurrencyInput
+                  id="base-b"
+                  value={offerB.baseSalary || undefined}
+                  onChange={(v) => updateOfferB("baseSalary", v || 0)}
+                  placeholder="120,000"
+                />
+              </FormRow>
+
+              <FormRow label="Signing Bonus">
+                <CurrencyInput
+                  id="signing-a"
+                  value={offerA.signingBonus || undefined}
+                  onChange={(v) => updateOfferA("signingBonus", v || 0)}
+                  placeholder="0"
+                />
+                <CurrencyInput
+                  id="signing-b"
+                  value={offerB.signingBonus || undefined}
+                  onChange={(v) => updateOfferB("signingBonus", v || 0)}
+                  placeholder="0"
+                />
+              </FormRow>
+
+              <FormRow label="Annual Bonus %">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={offerA.annualBonusTarget || ""}
+                  onChange={(e) => updateOfferA("annualBonusTarget", parseInt(e.target.value) || 0)}
+                  placeholder="15"
+                />
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={offerB.annualBonusTarget || ""}
+                  onChange={(e) => updateOfferB("annualBonusTarget", parseInt(e.target.value) || 0)}
+                  placeholder="15"
+                />
+              </FormRow>
+
+              <FormRow label="Location">
+                <SelectField
+                  value={offerA.location}
+                  onChange={(v) => updateOfferA("location", v)}
+                  options={locationOptions}
+                />
+                <SelectField
+                  value={offerB.location}
+                  onChange={(v) => updateOfferB("location", v)}
+                  options={locationOptions}
+                />
+              </FormRow>
+
+              {/* Equity */}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pb-2 pt-6">Equity</p>
+
+              <FormRow label="Equity Type">
+                <SelectField
+                  value={offerA.equityType}
+                  onChange={(v) => updateOfferA("equityType", v)}
+                  options={[
+                    { value: "none", label: "No Equity" },
+                    { value: "rsus", label: "RSUs" },
+                    { value: "options", label: "Stock Options" },
+                  ]}
+                />
+                <SelectField
+                  value={offerB.equityType}
+                  onChange={(v) => updateOfferB("equityType", v)}
+                  options={[
+                    { value: "none", label: "No Equity" },
+                    { value: "rsus", label: "RSUs" },
+                    { value: "options", label: "Stock Options" },
+                  ]}
+                />
+              </FormRow>
+
+              <FormRow label="Grant Value (4yr)">
+                <CurrencyInput
+                  id="equity-a"
+                  value={offerA.equityValue || undefined}
+                  onChange={(v) => updateOfferA("equityValue", v || 0)}
+                  placeholder="0"
+                  disabled={offerA.equityType === "none"}
+                />
+                <CurrencyInput
+                  id="equity-b"
+                  value={offerB.equityValue || undefined}
+                  onChange={(v) => updateOfferB("equityValue", v || 0)}
+                  placeholder="0"
+                  disabled={offerB.equityType === "none"}
+                />
+              </FormRow>
+
+              <FormRow label="Vesting">
+                <SelectField
+                  value={offerA.vestingSchedule}
+                  onChange={(v) => updateOfferA("vestingSchedule", v)}
+                  options={[
+                    { value: "4year-1cliff", label: "4yr / 1yr cliff" },
+                    { value: "4year-monthly", label: "4yr monthly" },
+                    { value: "3year-monthly", label: "3yr monthly" },
+                    { value: "immediate", label: "Immediate" },
+                  ]}
+                />
+                <SelectField
+                  value={offerB.vestingSchedule}
+                  onChange={(v) => updateOfferB("vestingSchedule", v)}
+                  options={[
+                    { value: "4year-1cliff", label: "4yr / 1yr cliff" },
+                    { value: "4year-monthly", label: "4yr monthly" },
+                    { value: "3year-monthly", label: "3yr monthly" },
+                    { value: "immediate", label: "Immediate" },
+                  ]}
+                />
+              </FormRow>
+
+              {/* Benefits */}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pb-2 pt-6">Benefits</p>
+
+              <FormRow label="Healthcare">
+                <SelectField
+                  value={offerA.healthcareQuality}
+                  onChange={(v) => updateOfferA("healthcareQuality", v)}
+                  options={[
+                    { value: "excellent", label: "Excellent (~$15k)" },
+                    { value: "good", label: "Good (~$10k)" },
+                    { value: "basic", label: "Basic (~$5k)" },
+                    { value: "none", label: "None" },
+                  ]}
+                />
+                <SelectField
+                  value={offerB.healthcareQuality}
+                  onChange={(v) => updateOfferB("healthcareQuality", v)}
+                  options={[
+                    { value: "excellent", label: "Excellent (~$15k)" },
+                    { value: "good", label: "Good (~$10k)" },
+                    { value: "basic", label: "Basic (~$5k)" },
+                    { value: "none", label: "None" },
+                  ]}
+                />
+              </FormRow>
+
+              <FormRow label="401k Match">
+                <SelectField
+                  value={offerA.has401kMatch ? `${offerA.matchPercent}-${offerA.maxMatchUpTo}` : "none"}
+                  onChange={(v) => {
+                    if (v === "none") {
+                      updateOfferA("has401kMatch", false);
+                    } else {
+                      const [match, max] = v.split("-").map(Number);
+                      updateOfferA("has401kMatch", true);
+                      updateOfferA("matchPercent", match);
+                      updateOfferA("maxMatchUpTo", max);
+                    }
+                  }}
+                  options={[
+                    { value: "100-6", label: "100% up to 6%" },
+                    { value: "50-6", label: "50% up to 6%" },
+                    { value: "100-4", label: "100% up to 4%" },
+                    { value: "50-4", label: "50% up to 4%" },
+                    { value: "none", label: "No Match" },
+                  ]}
+                />
+                <SelectField
+                  value={offerB.has401kMatch ? `${offerB.matchPercent}-${offerB.maxMatchUpTo}` : "none"}
+                  onChange={(v) => {
+                    if (v === "none") {
+                      updateOfferB("has401kMatch", false);
+                    } else {
+                      const [match, max] = v.split("-").map(Number);
+                      updateOfferB("has401kMatch", true);
+                      updateOfferB("matchPercent", match);
+                      updateOfferB("maxMatchUpTo", max);
+                    }
+                  }}
+                  options={[
+                    { value: "100-6", label: "100% up to 6%" },
+                    { value: "50-6", label: "50% up to 6%" },
+                    { value: "100-4", label: "100% up to 4%" },
+                    { value: "50-4", label: "50% up to 4%" },
+                    { value: "none", label: "No Match" },
+                  ]}
+                />
+              </FormRow>
+
+              <FormRow label="PTO Days">
+                <Input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={offerA.ptoDays}
+                  onChange={(e) => updateOfferA("ptoDays", parseInt(e.target.value) || 0)}
+                />
+                <Input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={offerB.ptoDays}
+                  onChange={(e) => updateOfferB("ptoDays", parseInt(e.target.value) || 0)}
+                />
+              </FormRow>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Compare Button */}
         <Button
@@ -360,104 +562,11 @@ export default function CompComparisonPage() {
             </>
           ) : (
             <>
-              <DollarSign className="mr-2 h-4 w-4" />
+              <Check className="mr-2 h-4 w-4" />
               Compare Offers
             </>
           )}
         </Button>
-
-        {/* Results */}
-        {results && (
-          <div className="space-y-8">
-            {/* Winner Cards */}
-            <div className="grid gap-4 sm:grid-cols-3">
-              {results.winners.map((w) => (
-                <ResultsCard
-                  key={w.year}
-                  variant="success"
-                  title={`Year ${w.year} Winner`}
-                  value={w.byTotalComp.companyName}
-                  subtitle={`${formatCurrency(w.byTotalComp.value)} total (${formatCurrency(w.byTotalComp.margin)} ahead)`}
-                />
-              ))}
-            </div>
-
-            {/* Detailed Comparison Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Total Compensation Over Time
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="py-3 text-left font-medium">Company</th>
-                        <th className="py-3 text-right font-medium">Year 1</th>
-                        <th className="py-3 text-right font-medium">Year 2</th>
-                        <th className="py-3 text-right font-medium">Year 4</th>
-                        <th className="py-3 text-right font-medium">COL Adjusted (Yr 4)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.comparisons.map((comp) => {
-                        const year1 = comp.compensation.find((c) => c.year === 1);
-                        const year2 = comp.compensation.find((c) => c.year === 2);
-                        const year4 = comp.compensation.find((c) => c.year === 4);
-                        const isWinner = results.winners.find((w) => w.year === 4)?.byTotalComp.companyName === comp.companyName;
-
-                        return (
-                          <tr key={comp.offerId} className={`border-b ${isWinner ? "bg-success/5" : ""}`}>
-                            <td className="py-3 font-medium">
-                              {comp.companyName}
-                              <span className="block text-xs text-muted-foreground">
-                                COL: {comp.locationCOL}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              {formatCurrency(year1?.total || 0)}
-                              <span className="block text-xs text-muted-foreground">
-                                Cash: {formatCurrency(year1?.cash || 0)}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              {formatCurrency(year2?.total || 0)}
-                              <span className="block text-xs text-muted-foreground">
-                                Equity: {formatCurrency(year2?.equity || 0)}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right font-semibold">
-                              {formatCurrency(year4?.total || 0)}
-                              <span className="block text-xs text-muted-foreground">
-                                Benefits: {formatCurrency(year4?.benefits || 0)}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              {formatCurrency(year4?.colAdjusted || 0)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-              <Button variant="outline" onClick={() => setResults(null)}>
-                Modify Offers
-              </Button>
-              <SaveResultsButton toolName={TOOL_NAME} />
-            </div>
-
-            <FinancialDisclaimer />
-          </div>
-        )}
       </div>
     </ToolLayout>
   );

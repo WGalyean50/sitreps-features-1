@@ -189,3 +189,63 @@ export const DATA_SOURCE = {
   url: "https://www.dfas.mil/militarymembers/payentitlements/Pay-Tables/",
   disclaimer: "Pay data is for educational purposes only. Actual military compensation may vary. Consult official DFAS resources for current rates.",
 };
+
+/**
+ * Retirement system types
+ * - HIGH_3: For those who entered service before Jan 1, 2018 (2.5% per year)
+ * - BRS: Blended Retirement System for those who entered after Jan 1, 2018 (2.0% per year)
+ */
+export type RetirementSystem = "HIGH_3" | "BRS";
+
+/**
+ * Calculate military retirement pay
+ * @param grade - Pay grade at retirement
+ * @param yearsOfService - Total years of creditable service (minimum 20 for retirement)
+ * @param retirementSystem - HIGH_3 or BRS
+ * @returns Monthly retirement pay amount
+ */
+export function calculateRetirementPay(
+  grade: PayGrade,
+  yearsOfService: number,
+  retirementSystem: RetirementSystem
+): number {
+  // Must have at least 20 years for traditional retirement
+  if (yearsOfService < 20) {
+    return 0;
+  }
+
+  // Get the base pay (simplified - uses current pay as proxy for "High-3" average)
+  // In reality, High-3 is average of highest 36 months
+  const basePay = getBasePay(grade, yearsOfService);
+
+  // Multiplier per year of service
+  const multiplier = retirementSystem === "HIGH_3" ? 0.025 : 0.02;
+
+  // Calculate retirement percentage (capped at 75% for High-3, 60% for BRS)
+  const maxPercent = retirementSystem === "HIGH_3" ? 0.75 : 0.60;
+  const retirementPercent = Math.min(yearsOfService * multiplier, maxPercent);
+
+  return Math.round(basePay * retirementPercent);
+}
+
+/**
+ * Get retirement eligibility info
+ */
+export function getRetirementEligibility(yearsOfService: number): {
+  eligible: boolean;
+  yearsUntilEligible: number;
+  message: string;
+} {
+  if (yearsOfService >= 20) {
+    return {
+      eligible: true,
+      yearsUntilEligible: 0,
+      message: "Eligible for retirement",
+    };
+  }
+  return {
+    eligible: false,
+    yearsUntilEligible: 20 - yearsOfService,
+    message: `${20 - yearsOfService} years until retirement eligible (20 years required)`,
+  };
+}

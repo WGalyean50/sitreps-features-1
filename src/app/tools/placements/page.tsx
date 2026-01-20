@@ -6,7 +6,6 @@ import { PlacementsMap } from "@/components/placements-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PLACEMENTS, OPENINGS, INDUSTRY_INFO, getRegionStats } from "@/data/placements";
 import { Users, Briefcase, TrendingUp, MapPin } from "lucide-react";
-import "leaflet/dist/leaflet.css";
 
 export default function PlacementsPage() {
   const allData = [...PLACEMENTS, ...OPENINGS];
@@ -15,6 +14,31 @@ export default function PlacementsPage() {
   const avgSalary = Math.round(
     allData.reduce((sum, item) => sum + item.salary, 0) / allData.length
   );
+
+  // Compute location breakdown
+  const locationStats = React.useMemo(() => {
+    const byLocation: Record<string, { city: string; state: string; count: number; totalSalary: number; placements: number; openings: number }> = {};
+
+    for (const item of allData) {
+      const key = `${item.city}, ${item.state}`;
+      if (!byLocation[key]) {
+        byLocation[key] = { city: item.city, state: item.state, count: 0, totalSalary: 0, placements: 0, openings: 0 };
+      }
+      byLocation[key].count++;
+      byLocation[key].totalSalary += item.salary;
+      if (item.type === "placement") byLocation[key].placements++;
+      else byLocation[key].openings++;
+    }
+
+    return Object.entries(byLocation)
+      .map(([name, data]) => ({
+        name,
+        ...data,
+        avgSalary: Math.round(data.totalSalary / data.count),
+        percent: Math.round((data.count / allData.length) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [allData]);
 
   return (
     <ToolLayout
@@ -98,7 +122,7 @@ export default function PlacementsPage() {
       </Card>
 
       {/* Industry Breakdown */}
-      <Card>
+      <Card className="mb-8">
         <CardHeader>
           <CardTitle>Industry Breakdown</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -130,6 +154,49 @@ export default function PlacementsPage() {
                   <span className="font-medium text-foreground">
                     ${stat.avgSalary.toLocaleString()} avg
                   </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Location Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Location Breakdown</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Distribution of placements and openings by metro area
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {locationStats.map((loc) => (
+              <div
+                key={loc.name}
+                className="p-4 rounded-lg border"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{loc.name}</span>
+                  <span className="px-2 py-0.5 rounded text-sm bg-muted text-muted-foreground">
+                    {loc.percent}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs mb-2">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                    {loc.placements} placed
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    {loc.openings} open
+                  </span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    ${loc.avgSalary.toLocaleString()}
+                  </span>
+                  {" "}avg salary
                 </div>
               </div>
             ))}

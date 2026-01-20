@@ -2,13 +2,11 @@ import * as React from "react";
 import Link from "next/link";
 
 const tools = [
-  { name: "Military Pay Comparison", href: "/tools/tax-calculator" },
-  { name: "VA Loan Calculator", href: "/tools/va-loan-calculator" },
-  { name: "Comp Comparison", href: "/tools/comp-comparison" },
-  { name: "Placements Heatmap", href: "/tools/placements" },
+  { name: "Military Pay Converter", href: "/tools/tax-calculator" },
+  { name: "Veteran Placements Heatmap", href: "/tools/placements" },
+  { name: "Offer Comparison Tool", href: "/tools/comp-comparison" },
   { name: "Resume Builder", href: "/tools/resume-builder" },
-  { name: "Translator", href: "/tools/translator" },
-  { name: "ROI Calculator", href: "/tools/roi-calculator" },
+  { name: "Defense to Corporate Translator", href: "/tools/translator" },
 ];
 
 export function Footer() {

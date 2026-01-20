@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Briefcase, Users, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Briefcase, Users, X, ZoomIn, ZoomOut } from "lucide-react";
 import {
   ALL_DATA,
   PLACEMENTS,
@@ -12,6 +12,7 @@ import {
   getRegionStats,
   type Placement,
 } from "@/data/placements";
+import { LeafletMap } from "./leaflet-map";
 
 // Cluster data by region
 interface RegionCluster {
@@ -187,126 +188,24 @@ function JobPanel({
   );
 }
 
-// The actual map component using react-leaflet
-function LeafletMap({
-  clusters,
-  zoomedCity,
-  zoomedItems,
-  mapCenter,
-  mapZoom,
-  onClusterClick,
-}: {
-  clusters: RegionCluster[];
-  zoomedCity: string | null;
-  zoomedItems: Placement[];
-  mapCenter: [number, number];
-  mapZoom: number;
-  onClusterClick: (cluster: RegionCluster) => void;
-}) {
-  const [leafletLoaded, setLeafletLoaded] = React.useState(false);
-  const [LeafletComponents, setLeafletComponents] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    // Dynamically import Leaflet components
-    Promise.all([
-      import("react-leaflet"),
-      import("leaflet"),
-    ]).then(([reactLeaflet, L]) => {
-      // Fix default marker icons
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-      });
-
-      setLeafletComponents({
-        MapContainer: reactLeaflet.MapContainer,
-        TileLayer: reactLeaflet.TileLayer,
-        Marker: reactLeaflet.Marker,
-        Popup: reactLeaflet.Popup,
-        useMap: reactLeaflet.useMap,
-      });
-      setLeafletLoaded(true);
-    });
-  }, []);
-
-  if (!leafletLoaded || !LeafletComponents) {
-    return (
-      <div className="w-full h-[600px] bg-muted animate-pulse rounded-lg flex items-center justify-center">
-        <p className="text-muted-foreground">Loading map...</p>
-      </div>
-    );
-  }
-
-  const { MapContainer, TileLayer, Marker, Popup } = LeafletComponents;
-
-  return (
-    <MapContainer
-      key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
-      center={mapCenter}
-      zoom={mapZoom}
-      className="w-full h-[600px]"
-      style={{ background: "#f0f0f0" }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-
-      {!zoomedCity &&
-        clusters.map((cluster) => {
-          const placements = cluster.items.filter((i) => i.type === "placement").length;
-          const openings = cluster.items.filter((i) => i.type === "opening").length;
-
-          return (
-            <Marker
-              key={cluster.id}
-              position={[cluster.lat, cluster.lng]}
-              eventHandlers={{
-                click: () => onClusterClick(cluster),
-              }}
-            >
-              <Popup>
-                <div className="text-center">
-                  <p className="font-medium">
-                    {cluster.city}, {cluster.state}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {placements} placements, {openings} openings
-                  </p>
-                  <p className="text-xs mt-1">Click marker for details</p>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-
-      {zoomedCity &&
-        zoomedItems.map((item) => (
-          <Marker key={item.id} position={[item.lat, item.lng]}>
-            <Popup>
-              <div>
-                <p className="font-medium">{item.title}</p>
-                <p className="text-sm">{item.company}</p>
-                <p className="text-sm text-muted-foreground">
-                  ${item.salary.toLocaleString()}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-    </MapContainer>
-  );
-}
-
 export function PlacementsMap() {
   const [selectedCluster, setSelectedCluster] = React.useState<RegionCluster | null>(null);
   const [zoomedCity, setZoomedCity] = React.useState<string | null>(null);
   const [mapCenter, setMapCenter] = React.useState<[number, number]>([39.8283, -98.5795]);
   const [mapZoom, setMapZoom] = React.useState(4);
+  const [showPlacements, setShowPlacements] = React.useState(true);
+  const [showOpenings, setShowOpenings] = React.useState(true);
 
-  const clusters = React.useMemo(() => clusterByRegion(ALL_DATA), []);
+  // Filter data based on toggle state
+  const filteredData = React.useMemo(() => {
+    return ALL_DATA.filter((item) => {
+      if (item.type === "placement" && !showPlacements) return false;
+      if (item.type === "opening" && !showOpenings) return false;
+      return true;
+    });
+  }, [showPlacements, showOpenings]);
+
+  const clusters = React.useMemo(() => clusterByRegion(filteredData), [filteredData]);
 
   const handleClusterClick = (cluster: RegionCluster) => {
     setSelectedCluster(cluster);
@@ -333,25 +232,85 @@ export function PlacementsMap() {
     setZoomedCity(null);
   };
 
-  // Get items for zoomed city
-  const zoomedItems = zoomedCity
-    ? clusters.find((c) => `${c.city}-${c.state}` === zoomedCity)?.items || []
-    : [];
+  // Get items for zoomed city (already filtered via clusters)
+  const zoomedItems = React.useMemo(() => {
+    if (!zoomedCity) return [];
+    const cluster = clusters.find((c) => `${c.city}-${c.state}` === zoomedCity);
+    return cluster?.items || [];
+  }, [zoomedCity, clusters]);
+
+  // Build markers based on zoom level
+  const markers = React.useMemo(() => {
+    if (zoomedCity) {
+      // Show individual jobs
+      return zoomedItems.map((item) => ({
+        id: item.id,
+        lat: item.lat,
+        lng: item.lng,
+        popup: (
+          <div>
+            <p className="font-medium">{item.title}</p>
+            <p className="text-sm">{item.company}</p>
+            <p className="text-sm text-muted-foreground">
+              ${item.salary.toLocaleString()}
+            </p>
+          </div>
+        ),
+      }));
+    } else {
+      // Show city clusters
+      return clusters.map((cluster) => {
+        const placements = cluster.items.filter((i) => i.type === "placement").length;
+        const openings = cluster.items.filter((i) => i.type === "opening").length;
+        return {
+          id: cluster.id,
+          lat: cluster.lat,
+          lng: cluster.lng,
+          onClick: () => handleClusterClick(cluster),
+          popup: (
+            <div className="text-center">
+              <p className="font-medium">
+                {cluster.city}, {cluster.state}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {placements} placements, {openings} openings
+              </p>
+              <p className="text-xs mt-1">Click marker for details</p>
+            </div>
+          ),
+        };
+      });
+    }
+  }, [clusters, zoomedCity, zoomedItems]);
 
   return (
     <div className="relative w-full h-[600px] rounded-lg overflow-hidden border">
-      {/* Legend */}
+      {/* Filter Toggles */}
       <div className="absolute bottom-4 left-4 z-[1000] bg-background/95 backdrop-blur p-3 rounded-lg shadow-lg">
-        <p className="text-xs font-medium mb-2">Legend</p>
-        <div className="flex gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+        <p className="text-xs font-medium mb-2">Filter</p>
+        <div className="flex gap-3 text-xs">
+          <button
+            onClick={() => setShowPlacements(!showPlacements)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
+              showPlacements
+                ? "bg-green-100 text-green-700 border border-green-300"
+                : "bg-muted text-muted-foreground border border-transparent"
+            }`}
+          >
+            <div className={`w-2.5 h-2.5 rounded-full ${showPlacements ? "bg-green-500" : "bg-muted-foreground/40"}`} />
             <span>{PLACEMENTS.length} Placements</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+          </button>
+          <button
+            onClick={() => setShowOpenings(!showOpenings)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
+              showOpenings
+                ? "bg-blue-100 text-blue-700 border border-blue-300"
+                : "bg-muted text-muted-foreground border border-transparent"
+            }`}
+          >
+            <div className={`w-2.5 h-2.5 rounded-full ${showOpenings ? "bg-blue-500" : "bg-muted-foreground/40"}`} />
             <span>{OPENINGS.length} Openings</span>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -376,12 +335,10 @@ export function PlacementsMap() {
       )}
 
       <LeafletMap
-        clusters={clusters}
-        zoomedCity={zoomedCity}
-        zoomedItems={zoomedItems}
-        mapCenter={mapCenter}
-        mapZoom={mapZoom}
-        onClusterClick={handleClusterClick}
+        center={mapCenter}
+        zoom={mapZoom}
+        markers={markers}
+        height="600px"
       />
     </div>
   );

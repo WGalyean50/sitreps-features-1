@@ -11,16 +11,26 @@ import { ResultsCard } from "@/components/results-card";
 import { SaveResultsButton } from "@/components/save-results-button";
 import { TaxDisclaimer } from "@/components/disclaimer";
 import { toolStarted, toolCompleted } from "@/lib/analytics";
-import { getRankOptions, type PayGrade } from "@/data/military-pay";
-import { Loader2, ArrowRight, ArrowLeft, TrendingUp, MapPin, DollarSign, Search } from "lucide-react";
+import {
+  getRankOptions,
+  calculateRetirementPay,
+  getRetirementEligibility,
+  type PayGrade,
+  type RetirementSystem,
+} from "@/data/military-pay";
+import { Loader2, ArrowRight, ArrowLeft, TrendingUp, MapPin, DollarSign, Search, Clock, BadgeCheck } from "lucide-react";
 
 const TOOL_NAME = "military-pay-comparison";
+
+type SeparationType = "ets" | "retiree";
 
 interface MilitaryInfo {
   grade: PayGrade | "";
   yearsOfService: number;
   zipCode: string;
   withDependents: boolean;
+  separationType: SeparationType;
+  retirementSystem: RetirementSystem;
 }
 
 interface StateEquivalent {
@@ -40,12 +50,17 @@ interface StateEquivalent {
 interface MilitaryPayResult {
   military: {
     grade: string;
+    separationType?: "ets" | "retiree";
     monthly: { basePay: number; bah: number; bas: number; total: number };
     annual: { grossTotal: number; taxableIncome: number; taxFreeAllowances: number };
     taxes: { federalTax: number; stateTax: number; fica: number; totalTax: number };
     netIncome: { annual: number; monthly: number };
     effectiveRate: number;
   };
+  retirement: {
+    monthlyPay: number;
+    annualPay: number;
+  } | null;
   stateEquivalents: StateEquivalent[];
   summary: {
     lowestSalaryNeeded: StateEquivalent;
@@ -63,6 +78,8 @@ export default function MilitaryPayComparisonPage() {
     yearsOfService: 0,
     zipCode: "",
     withDependents: true,
+    separationType: "ets",
+    retirementSystem: "HIGH_3",
   });
   const [results, setResults] = React.useState<MilitaryPayResult | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -70,6 +87,20 @@ export default function MilitaryPayComparisonPage() {
   const [statesOfInterest, setStatesOfInterest] = React.useState("");
 
   const rankOptions = getRankOptions();
+
+  // Calculate retirement eligibility and pay
+  const retirementEligibility = React.useMemo(() => {
+    return getRetirementEligibility(militaryInfo.yearsOfService);
+  }, [militaryInfo.yearsOfService]);
+
+  const monthlyRetirementPay = React.useMemo(() => {
+    if (militaryInfo.separationType !== "retiree" || !militaryInfo.grade) return 0;
+    return calculateRetirementPay(
+      militaryInfo.grade as PayGrade,
+      militaryInfo.yearsOfService,
+      militaryInfo.retirementSystem
+    );
+  }, [militaryInfo.grade, militaryInfo.yearsOfService, militaryInfo.separationType, militaryInfo.retirementSystem]);
 
   React.useEffect(() => {
     toolStarted(TOOL_NAME);
@@ -86,6 +117,9 @@ export default function MilitaryPayComparisonPage() {
           yearsOfService: militaryInfo.yearsOfService,
           zipCode: militaryInfo.zipCode,
           withDependents: militaryInfo.withDependents,
+          separationType: militaryInfo.separationType,
+          retirementSystem: militaryInfo.retirementSystem,
+          monthlyRetirementPay: monthlyRetirementPay,
         }),
       });
 
@@ -245,6 +279,104 @@ export default function MilitaryPayComparisonPage() {
               </div>
             </div>
 
+            {/* Separation Type */}
+            <div className="space-y-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label className="text-base font-medium">Separation Type</Label>
+                <p className="text-sm text-muted-foreground">
+                  Are you separating (ETS) or retiring with pension benefits?
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setMilitaryInfo({ ...militaryInfo, separationType: "ets" })}
+                    className={`p-4 rounded-lg border text-left transition-colors ${
+                      militaryInfo.separationType === "ets"
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-input hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-medium">ETS / Separation</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Leaving active duty without retirement benefits
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMilitaryInfo({ ...militaryInfo, separationType: "retiree" })}
+                    className={`p-4 rounded-lg border text-left transition-colors ${
+                      militaryInfo.separationType === "retiree"
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-input hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <BadgeCheck className="h-4 w-4" />
+                      <span className="font-medium">Retiree</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Retiring with pension benefits (20+ years)
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Retirement System - only show for retirees */}
+              {militaryInfo.separationType === "retiree" && (
+                <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+                  {!retirementEligibility.eligible && (
+                    <div className="p-3 bg-warning/10 border border-warning/20 rounded text-sm text-warning">
+                      <strong>Note:</strong> You need {retirementEligibility.yearsUntilEligible} more year(s) of service to be eligible for retirement (20 years required).
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Retirement System</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={militaryInfo.retirementSystem === "HIGH_3"}
+                          onChange={() => setMilitaryInfo({ ...militaryInfo, retirementSystem: "HIGH_3" })}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">High-3 (Pre-2018)</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={militaryInfo.retirementSystem === "BRS"}
+                          onChange={() => setMilitaryInfo({ ...militaryInfo, retirementSystem: "BRS" })}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">BRS (Post-2018)</span>
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      High-3: 2.5% per year (max 75%) | BRS: 2.0% per year (max 60%) + TSP matching
+                    </p>
+                  </div>
+
+                  {retirementEligibility.eligible && militaryInfo.grade && (
+                    <div className="p-3 bg-success/10 border border-success/20 rounded">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Estimated Monthly Retirement Pay</span>
+                        <span className="text-lg font-bold text-success">
+                          {formatCurrency(monthlyRetirementPay)}/mo
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {militaryInfo.yearsOfService} years × {militaryInfo.retirementSystem === "HIGH_3" ? "2.5%" : "2.0%"} = {Math.min(militaryInfo.yearsOfService * (militaryInfo.retirementSystem === "HIGH_3" ? 2.5 : 2.0), militaryInfo.retirementSystem === "HIGH_3" ? 75 : 60)}% of base pay
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* States of Interest */}
             <div className="space-y-2">
               <Label htmlFor="states">States of Interest (optional)</Label>
@@ -314,6 +446,33 @@ export default function MilitaryPayComparisonPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Retirement Income Card - Only for Retirees */}
+          {results.retirement && (
+            <Card className="border-success/30 bg-success/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <BadgeCheck className="h-5 w-5 text-success" />
+                  Your Retirement Income
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Monthly Retirement Pay</p>
+                    <p className="text-2xl font-bold text-success">{formatCurrency(results.retirement.monthlyPay)}/mo</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Annual Retirement Pay</p>
+                    <p className="text-2xl font-bold text-success">{formatCurrency(results.retirement.annualPay)}/year</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  This retirement income reduces how much civilian salary you need to match your current take-home pay.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Key Insight */}
           <div className="p-4 bg-info/10 border border-info/20 rounded-lg">
