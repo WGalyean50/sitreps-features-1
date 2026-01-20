@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 
 interface CurrencyInputProps {
   id: string;
-  label: string;
+  label?: string;
   value: number | undefined;
   onChange: (value: number | undefined) => void;
   placeholder?: string;
@@ -16,6 +16,7 @@ interface CurrencyInputProps {
   className?: string;
   error?: string;
   helperText?: string;
+  disabled?: boolean;
 }
 
 export function CurrencyInput({
@@ -29,6 +30,7 @@ export function CurrencyInput({
   className,
   error,
   helperText,
+  disabled = false,
 }: CurrencyInputProps) {
   const [displayValue, setDisplayValue] = React.useState<string>("");
 
@@ -70,10 +72,13 @@ export function CurrencyInput({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <Label htmlFor={id}>{label}</Label>
+    <div className={cn(label && "space-y-2", className)}>
+      {label && <Label htmlFor={id}>{label}</Label>}
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+        <span className={cn(
+          "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
+          disabled && "opacity-50"
+        )}>
           $
         </span>
         <Input
@@ -86,6 +91,7 @@ export function CurrencyInput({
           className={cn("pl-7", error && "border-destructive")}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
+          disabled={disabled}
         />
       </div>
       {error && (
