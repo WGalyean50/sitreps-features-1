@@ -36,7 +36,7 @@
         "LocationSelect has state dropdown",
         "All components are mobile responsive"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "layout-and-navigation",
