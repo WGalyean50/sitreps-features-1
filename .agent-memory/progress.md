@@ -109,10 +109,23 @@
 - Build passes with new API route marked as dynamic
 - **Commit:** Agent: Complete va-loan-calculator-backend
 
+### Session 2 - Feature 10: va-loan-calculator-ui
+- Created VA loan calculator page at /tools/va-loan-calculator
+  - Input form: home price, rent, down payment %, loan term, first-time VA
+  - Monthly cost breakdown: mortgage vs rent with all components
+  - VA loan details: funding fee, loan amount, total financed
+  - Break-even year prominently displayed as headline result
+  - Recharts LineChart showing net cost comparison over time
+  - Detailed comparison table at 1, 3, 5, 10 year marks
+- Includes SaveResultsButton for email capture
+- Analytics events: tool_started, tool_completed
+- Mobile responsive with grid layouts
+- **Commit:** Agent: Complete va-loan-calculator-ui
+
 ## Current State
-- Last working commit: va-loan-calculator-backend
-- Features completed: 9
-- Features remaining: 10 (see features.json)
+- Last working commit: va-loan-calculator-ui
+- Features completed: 10
+- Features remaining: 9 (see features.json)
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign
