@@ -62,7 +62,7 @@
         "Rate limiting prevents abuse",
         "Privacy policy link present"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "analytics-integration",

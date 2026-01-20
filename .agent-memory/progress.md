@@ -39,10 +39,22 @@
 - Fixed LucideIcon serialization issue (pass icon name as string, not component)
 - **Commit:** Agent: Complete layout-and-navigation
 
+### Session 2 - Feature 5: email-capture-system
+- Created EmailCaptureModal component with form validation and status handling
+- Created SaveResultsButton component with useEmailCapture hook
+- Created POST /api/email/capture API route with:
+  - Email validation (regex)
+  - In-memory rate limiting (5 req/min per IP)
+  - Proper error handling and status codes (400, 429, 500)
+  - Console logging for dev (ready for production email service integration)
+- Privacy policy link included in modal
+- Build passes with API route marked as dynamic
+- **Commit:** Agent: Complete email-capture-system
+
 ## Current State
-- Last working commit: layout-and-navigation
-- Features completed: 4
-- Features remaining: 15 (see features.json)
+- Last working commit: email-capture-system
+- Features completed: 5
+- Features remaining: 14 (see features.json)
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign
