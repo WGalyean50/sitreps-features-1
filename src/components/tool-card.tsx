@@ -5,17 +5,45 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LucideIcon } from "lucide-react";
+import {
+  Calculator,
+  Home,
+  DollarSign,
+  FileText,
+  ArrowRightLeft,
+  GraduationCap,
+  Briefcase,
+  MapPin,
+  TrendingUp,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+
+// Map icon names to components
+const iconMap: Record<string, LucideIcon> = {
+  Calculator,
+  Home,
+  DollarSign,
+  FileText,
+  ArrowRightLeft,
+  GraduationCap,
+  Briefcase,
+  MapPin,
+  TrendingUp,
+  Users,
+};
 
 interface ToolCardProps {
   title: string;
   description: string;
   href: string;
-  icon: LucideIcon;
+  iconName: string;
   className?: string;
 }
 
-export function ToolCard({ title, description, href, icon: Icon, className }: ToolCardProps) {
+export function ToolCard({ title, description, href, iconName, className }: ToolCardProps) {
+  const Icon = iconMap[iconName] || Calculator;
+
   return (
     <Link href={href} className="block group">
       <Card className={cn(

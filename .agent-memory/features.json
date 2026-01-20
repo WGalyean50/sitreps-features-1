@@ -49,7 +49,7 @@
         "Tools Hub (/tools) displays tool cards",
         "Mobile navigation menu works"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "email-capture-system",

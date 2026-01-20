@@ -19,4 +19,5 @@ Example: "Auth header requires 'Bearer ' prefix with trailing space"
 ## Learnings
 - create-next-app fails with existing files in directory; set up manually with package.json, tsconfig, configs
 - Ports 3000-3002 often in use; dev server auto-increments to available port
+- Cannot pass React components (like LucideIcon) from Server to Client Components; use icon name string and map in client component
 
