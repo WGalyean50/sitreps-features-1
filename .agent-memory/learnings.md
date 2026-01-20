@@ -16,3 +16,7 @@ Example: "Auth header requires 'Bearer ' prefix with trailing space"
 - Email capture is required for saving results (lead gen strategy)
 - AI resume builder needs streaming responses for perceived performance
 
+## Learnings
+- create-next-app fails with existing files in directory; set up manually with package.json, tsconfig, configs
+- Ports 3000-3002 often in use; dev server auto-increments to available port
+

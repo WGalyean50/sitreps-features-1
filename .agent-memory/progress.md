@@ -3,10 +3,18 @@
 ## Session History
 <!-- Append session summaries here -->
 
+### Session 1 - Feature 1: foundation-scaffolding
+- Created Next.js 14+ project manually (create-next-app conflicted with existing files)
+- Configured Tailwind CSS with shadcn/ui design tokens
+- Added Button component from shadcn/ui
+- Created folder structure: /app, /components, /lib, /data, /types
+- Build passes, dev server starts on available port
+- **Commit:** Agent: Complete foundation-scaffolding
+
 ## Current State
-- Last working commit: (none)
-- Features completed: 0
-- Features remaining: (see features.json)
+- Last working commit: foundation-scaffolding
+- Features completed: 1
+- Features remaining: 18 (see features.json)
 
 ## Project Overview
 - **Project:** Sitreps.com Redesign

@@ -11,7 +11,7 @@
         "TypeScript strict mode enabled",
         "Folder structure exists: /app, /components, /lib, /data, /types"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "design-system",
