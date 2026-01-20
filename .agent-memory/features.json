@@ -87,7 +87,7 @@
         "All 50 states supported including 0% tax states",
         "Data sourced from DFAS with timestamp"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "tax-calculator-ui",
