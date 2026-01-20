@@ -36,12 +36,23 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="text-display tracking-tight text-foreground sm:text-display-lg">
-              Make Smarter Transition Decisions
+              Demo Features for Sitreps.com
             </h1>
             <p className="mt-6 text-body-lg text-muted-foreground">
               Self-service tools built by veterans, for veterans. Calculate your true
               compensation, translate your experience, and plan your next move with
               confidence.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Built by{" "}
+              <a
+                href="https://www.linkedin.com/in/wgalyean/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                Wilson Galyean
+              </a>
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/tools">

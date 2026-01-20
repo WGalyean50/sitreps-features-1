@@ -138,3 +138,9 @@ run it on a different port
 ok for the military pay comparison calculator, include a field where they can input wht states they're interested in, like this: TX, CA, WA, FL 
 ```
 
+### 22:51:32
+
+```
+for the homepage, change the headline to "demo features for Sitreps.com". Built by Wilson Galyean, with that name with this URL as the link: https://www.linkedin.com/in/wgalyean/ 
+```
+
