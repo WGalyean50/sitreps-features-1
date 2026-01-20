@@ -162,3 +162,9 @@ change the homepage's subtitle to "based on feature requests on LinkedIn, as of 
 and remove the About and Resources bits in the header, they're worthless. 
 ```
 
+### 22:56:14
+
+```
+can you include the "heatmap" of job openings/placements? create dummy data for 200 placements and 30 current job openinings in the US, make hte locations and roles realistic. when you hover on a pin when zoomed way out (like county level or higher) it should show % breakdown by industry, with average pay for each industry. and when you click on that it zooms in to the city, with specific pins on the office locations of the hiring companies, with info on what specific roles were hired there, and their titles and pay. 
+```
+

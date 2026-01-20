@@ -23,6 +23,12 @@ const financialTools = [
 
 const careerTools = [
   {
+    title: "Veteran Placements Heatmap",
+    description: "Explore where veterans are getting placed and current job openings. See industry breakdown and salaries by location.",
+    href: "/tools/placements",
+    iconName: "MapPin",
+  },
+  {
     title: "AI Resume Builder",
     description: "Transform your military experience into a civilian resume. AI-powered translation of military jargon to corporate language.",
     href: "/tools/resume-builder",
