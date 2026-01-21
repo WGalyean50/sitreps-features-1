@@ -33,3 +33,12 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code
+.claude/
+.agent-memory/
+claude.md
+
+# Project-specific
+docs/
+/linkedin
